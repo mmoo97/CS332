@@ -26,7 +26,9 @@ int listdir(const char *name, int indent) { // block recycled from stackoverflow
             snprintf(path, sizeof(path), "%s/%s", name, entry->d_name); // put chars in path array 
             printf("%*s[%s]\n", indent, "", entry->d_name); // print dir name
            count += listdir(path, indent + 2); // recursively print elements till null
-        } else {
+        } else if (entry->d_type == DT_LNK) {
+	    printf("%*s- %s %s\n", indent, "", entry->d_name, "(symbolic link)");	
+	}else {
             printf("%*s- %s\n", indent, "", entry->d_name); // print file name
         }
 	count++;
