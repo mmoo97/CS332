@@ -16,7 +16,6 @@ void listdir(const char *name, int indent)
     struct dirent *entry;
 
     if (!(dir = opendir(name)))
-	printf("Directory does not exist.\n");
         return;
 
     while ((entry = readdir(dir)) != NULL) {
@@ -43,7 +42,12 @@ int main(int argv, char** argc){
 		for (i = 0; i < argv; i++)
 		printf("Arg %d: %s\n", i, argc[i]);
 	}*/
-	listdir("main.c", 0);
+	if (argv == 1){
+		printf("Current Directory\n");
+		listdir(".", 0);
+	}else{
+		listdir(argc[1], 0);
+	}
 	return 0;
 }
 
