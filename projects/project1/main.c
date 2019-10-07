@@ -10,44 +10,41 @@ Project #:1
 #include <stdio.h>
 #include <string.h>
 
-void listdir(const char *name, int indent)
-{
-    DIR *dir;
-    struct dirent *entry;
+int listdir(const char *name, int indent) { // block recycled from stackoverflow from (https://stackoverflow.com/questions/8436841/how-to-recursively-list-directories-in-c-on-linux) 
+    DIR *dir; //initalize dir pointer
+    struct dirent *entry; //create a directory structure
+    int count = 0; 
 
-    if (!(dir = opendir(name)))
-        return;
+    if (!(dir = opendir(name))) // exit program if dir doesn't exist/retruns null
+        return -1;
 
-    while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_type == DT_DIR) {
-            char path[1024];
+    while ((entry = readdir(dir)) != NULL) { // iterate through each filename till none left
+        if (entry->d_type == DT_DIR) { // make sure entry is of type dir
+            char path[1024]; // create buffer for line output
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
-                continue;
-            snprintf(path, sizeof(path), "%s/%s", name, entry->d_name);
-            printf("%*s[%s]\n", indent, "", entry->d_name);
-            listdir(path, indent + 2);
+		continue;
+            snprintf(path, sizeof(path), "%s/%s", name, entry->d_name); // put chars in path array 
+            printf("%*s[%s]\n", indent, "", entry->d_name); // print dir name
+           count += listdir(path, indent + 2); // recursively print elements till null
         } else {
-            printf("%*s- %s\n", indent, "", entry->d_name);
+            printf("%*s- %s\n", indent, "", entry->d_name); // print file name
         }
+	count++;
     }
     closedir(dir);
+    return count;
 }
 
 int main(int argv, char** argc){
 	int i;
-/*	if (argv == 1) {
-		printf("Tracing route....\n");
-		//Todo: Directory list from current dir
-	}else {
-		for (i = 0; i < argv; i++)
-		printf("Arg %d: %s\n", i, argc[i]);
-	}*/
+	int count = 0;
 	if (argv == 1){
 		printf("Current Directory\n");
-		listdir(".", 0);
+		count = listdir(".", 0);
 	}else{
-		listdir(argc[1], 0);
+		count = listdir(argc[1], 0);
 	}
+	printf("( %d ITEMS TRAVERSED. ) \n", count);
 	return 0;
 }
 
