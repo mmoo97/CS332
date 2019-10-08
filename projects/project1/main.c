@@ -44,7 +44,7 @@ int main(int argc, char** argv){
 	int opt; 
 
 	while(optind < argc) { 
-	     if ((opt = getopt(argc, argv, ":s:f:")) != -1) {  
+	       if ((opt = getopt(argc, argv, ":s:f:")) != -1) {  
              switch(opt) {  
                  case 's':
                      printf("option: %d\n", atoi(optarg));
@@ -53,28 +53,27 @@ int main(int argc, char** argv){
                      printf("filename: %s\n", optarg);
                      break;  
                  case ':':   
-                     printf("option needs a value\n");
+                     printf("option -s or -f missing a value.\n");
                      break;  
                  case '?':   
-                     printf("unknown option: %c\n", optopt);
+                     printf("Unrecognised option: %c\n", optopt);
                      break;  
-             } else {
-	     	
-	       } 
-	     }
-	}   
-
-	if (argc == 1){
+             }
+	     } else if (argc == 2 && strcmp(argv[argc-1],"--help") == 0) {
+                	printf("\ncommand <directory> [<options>] \n");
+                	printf("\t-s <file size in bytes>\n\t\tList all files with file size greater than or equal to the value specified.");
+                	printf("\n\t-f <string pattern>\n\t\tList all files that contain specified substring pattern.\n\n");
+			optind++;
+        	}else {
+                count = listdir(argv[1], 0);
+		optind++;
+        	}
+	} 
+	if (argc == 1){ 
 		printf("Current Directory\n");
 		count = listdir(".", 0);
-	}else if (argc == 2 && strcmp(argv[argc-1],"--help") == 0) {
-		printf("\ncommand <directory> [<options>] \n");
-		printf("\t-s <file size in bytes>\n\t\tList all files with file size greater than or equal to the value specified.");
-		printf("\n\t-f <string pattern>\n\t\tList all files that contain specified substring pattern.\n\n");
-	}else {	
-		count = listdir(argv[1], 0);
 	}
 	printf("( %d ITEMS TRAVERSED. ) \n", count);
-	
+
 	return 0;
 }
