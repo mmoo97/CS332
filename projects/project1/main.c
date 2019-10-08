@@ -43,7 +43,8 @@ int main(int argc, char** argv){
 	int count = 0;
 	int opt; 
 
-	while((opt = getopt(argc, argv, ":s:f:")) != -1) {  
+	while(optind < argc) { 
+	     if ((opt = getopt(argc, argv, ":s:f:")) != -1) {  
              switch(opt) {  
                  case 's':
                      printf("option: %d\n", atoi(optarg));
@@ -57,8 +58,11 @@ int main(int argc, char** argv){
                  case '?':   
                      printf("unknown option: %c\n", optopt);
                      break;  
-             }
-    	}   
+             } else {
+	     	
+	       } 
+	     }
+	}   
 
 	if (argc == 1){
 		printf("Current Directory\n");
@@ -74,4 +78,3 @@ int main(int argc, char** argv){
 	
 	return 0;
 }
-
