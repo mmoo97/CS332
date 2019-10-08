@@ -9,6 +9,7 @@ Project #:1
 #include <dirent.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 int listdir(const char *name, int indent) { // block recycled from stackoverflow from (https://stackoverflow.com/questions/8436841/how-to-recursively-list-directories-in-c-on-linux) 
     DIR *dir; //initalize dir pointer
@@ -37,16 +38,40 @@ int listdir(const char *name, int indent) { // block recycled from stackoverflow
     return count;
 }
 
-int main(int argv, char** argc){
+int main(int argc, char** argv){
 	int i;
 	int count = 0;
-	if (argv == 1){
+	int opt; 
+
+	while((opt = getopt(argc, argv, ":s:f:")) != -1) {  
+             switch(opt) {  
+                 case 's':
+                     printf("option: %d\n", atoi(optarg));
+                     break;  
+                 case 'f':   
+                     printf("filename: %s\n", optarg);
+                     break;  
+                 case ':':   
+                     printf("option needs a value\n");
+                     break;  
+                 case '?':   
+                     printf("unknown option: %c\n", optopt);
+                     break;  
+             }
+    	}   
+
+	if (argc == 1){
 		printf("Current Directory\n");
 		count = listdir(".", 0);
-	}else{
-		count = listdir(argc[1], 0);
+	}else if (argc == 2 && strcmp(argv[argc-1],"--help") == 0) {
+		printf("\ncommand <directory> [<options>] \n");
+		printf("\t-s <file size in bytes>\n\t\tList all files with file size greater than or equal to the value specified.");
+		printf("\n\t-f <string pattern>\n\t\tList all files that contain specified substring pattern.\n\n");
+	}else {	
+		count = listdir(argv[1], 0);
 	}
 	printf("( %d ITEMS TRAVERSED. ) \n", count);
+	
 	return 0;
 }
 
