@@ -1,0 +1,5 @@
+# Directory Traverse
+
+This code was primarily developed on a Mac and should runn flawlessly via this device. Upon last minute testing on vulcan systems it came to my attention that my flags didn't work. Haven't Been able to diagnose the problem thus far. 
+
+For operation help, type ```-h``` when executing program.
