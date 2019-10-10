@@ -11,7 +11,7 @@ Project #:1
 #include <string.h>
 #include <stdlib.h>
 
-int listdir(const char *name, int indent) { // block recycled from stackoverflow from (https://stackoverflow.com/questions/8436841/how-to-recursively-list-directories-in-c-on-linux) 
+int listdir(const char *name, int indent, int s, int sval, int f, char** fval) { // block recycled from stackoverflow from (https://stackoverflow.com/questions/8436841/how-to-recursively-list-directories-in-c-on-linux) 
     DIR *dir; //initalize dir pointer
     struct dirent *entry; //create a directory structure
     int count = 0; 
@@ -26,7 +26,7 @@ int listdir(const char *name, int indent) { // block recycled from stackoverflow
 		continue;
             snprintf(path, sizeof(path), "%s/%s", name, entry->d_name); // put chars in path array 
             printf("%*s[%s]\n", indent, "", entry->d_name); // print dir name
-           count += listdir(path, indent + 2); // recursively print elements till null
+           count += listdir(path, indent + 2, s, sval, f, fval); // recursively print elements till null
         } else if (entry->d_type == DT_LNK) {
 	    printf("%*s- %s %s\n", indent, "", entry->d_name, "(symbolic link)");	
 	}else {
@@ -42,38 +42,61 @@ int main(int argc, char** argv){
 	int i;
 	int count = 0;
 	int opt; 
+    char *dir;
+
+    int s = 0;
+    int sval = 0;
+    int f = 0;
+    char * fval;
+
 
 	while(optind < argc) { 
-	       if ((opt = getopt(argc, argv, ":s:f:")) != -1) {  
+	       if ((opt = getopt(argc, argv, ":s:f:h")) != -1) {  
              switch(opt) {  
                  case 's':
-                     printf("option: %d\n", atoi(optarg));
+                    if (dir == NULL) {
+                        printf("***Current Directory***\n");
+                        dir = ".";
+                    }
+                    s = 1;
+                    sval = atoi(optarg);
+    
                      break;  
                  case 'f':   
-                     printf("filename: %s\n", optarg);
+                     if (dir == NULL) {
+                        printf("***Current Directory***\n");
+                        dir = ".";
+                    }
+                    f = 1;
+                    fval = optarg;
+
+                     break;  
+                 case 'h':   
+                    printf("\ncommand <directory> [<options>] \n");
+                    printf("\t-s <file size in bytes>\n\t\tList all files with file size greater than or equal to the value specified.");
+                    printf("\n\t-f <string pattern>\n\t\tList all files that contain specified substring pattern.\n\n");
                      break;  
                  case ':':   
                      printf("option -s or -f missing a value.\n");
-                     break;  
+                     return -1;  
                  case '?':   
                      printf("Unrecognised option: %c\n", optopt);
-                     break;  
-             }
-	     } else if (argc == 2 && strcmp(argv[argc-1],"--help") == 0) {
-                	printf("\ncommand <directory> [<options>] \n");
-                	printf("\t-s <file size in bytes>\n\t\tList all files with file size greater than or equal to the value specified.");
-                	printf("\n\t-f <string pattern>\n\t\tList all files that contain specified substring pattern.\n\n");
-			optind++;
-        	}else {
-                count = listdir(argv[1], 0);
-		optind++;
-        	}
+                     return -1;  
+             } 
+         }else {
+            dir = argv[1];
+            optind++;
+         }
 	} 
 	if (argc == 1){ 
-		printf("Current Directory\n");
-		count = listdir(".", 0);
-	}
+		printf("***Current Directory***\n");
+		count = listdir(".", 0, 0, 0, 0, &fval);
+	}else {
+        count = listdir(dir, 0, s, sval, f, &fval);
+    }
+    
 	printf("( %d ITEMS TRAVERSED. ) \n", count);
+    //printf("\ns = %d; sval = %d; f = %d; fval = %s\n", s,sval,f,fval); //test args
 
 	return 0;
 }
