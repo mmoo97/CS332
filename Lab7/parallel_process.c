@@ -8,6 +8,23 @@
 
 #define LINESIZE 1024
 
+char * split(char* array) {
+	char* temp[2];
+	int init_size = strlen(array);
+	char delim[] = " ";
+
+	char *ptr = strtok(str, delim);
+
+	while (ptr != NULL)
+	{
+		temp[count] = strdup(ptr);
+		ptr = strtok(NULL, delim);
+		count++;
+	}
+
+	return temp;
+}
+
 void writeFile(char *dir, char* array[10]){
 	int i;
 
@@ -20,7 +37,7 @@ void writeFile(char *dir, char* array[10]){
 	fclose(f);
 }
 
-int main(int argc, char* args[]) {
+int main(int argc, char* argv[]) {
 	char* list_items[10];
 	char line[LINESIZE];
 	int i, count;
@@ -50,9 +67,12 @@ int main(int argc, char* args[]) {
 
     for(i = 0; i < 2; i++){ // change this later
 
+	    pid_t pid;
+    	int status;
+
 	    pid = fork();
 	    if (pid == 0) { /* this is child process */
-	        execv("/usr/bin/uname", args);
+	        execvp(list_items[i], &list_items[i]);
 	        printf("If you see this statement then execl failed ;-(\n");
 		exit(-1);
 	    } else if (pid > 0) { /* this is the parent process */
@@ -69,8 +89,8 @@ int main(int argc, char* args[]) {
 	        perror("fork"); /* use perror to print the system error message */
 	        exit(EXIT_FAILURE);
 	    }
-
-	    printf("[%ld]: Exiting program .....\n", (long)getpid());
+    
+    printf("[%ld]: Exiting program .....\n", (long)getpid());
 
 }
 
