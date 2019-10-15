@@ -25,23 +25,23 @@ void split(char* array) {
 	}
 }
 
-void writeFile(char *dir, char* array[10]){
+void writeFile(char *dir, char* array){
 	int i;
 
 	FILE *f = fopen(dir, "wb");
 	
-	for(i=0;i<2;i++) { // change for big array
-        fprintf(f, "%s", array[i]);
-
-     }
+    fprintf(f, "%s", array); 
 
 	fclose(f);
 }
 
 int main(int argc, char* argv[]) {
 	char* list_items[10];
+	char* base_items[10];
 	char line[LINESIZE];
 	int i, count;
+
+	char new_str[1000];
 
 	FILE *fptr = fopen("input.txt", "r");
 	if(fptr == NULL){
@@ -52,22 +52,18 @@ int main(int argc, char* argv[]) {
 	count = 0;
 	while (fgets(line, LINESIZE, fptr) != NULL){
 		list_items[count] = strdup(line);
+		base_items[count] = strdup(line);
 		count++;		
 	}
 
 	fclose(fptr);
 
-	time_t currtime;
+	time_t start;
+	time_t finish;
 
-	time(&currtime);
-
-	printf("%s\n", ctime(&currtime));
-
-	pid_t pid;
-    int status;
-
+	// printf("%s\n", ctime(&start));
     
-    for(i = 0; i < 2; i++){ // change this later
+    for(i = 0; i < 3; i++){ // change this later
 
 		pid_t pid;
 	    int status;
@@ -75,30 +71,40 @@ int main(int argc, char* argv[]) {
 	    split(list_items[i]);
 
 	    pid = fork();
-	    if (pid == 0) { /* this is child process */
+	    if (pid == 0) { 
 	        execl(temp[0], temp[1], (char *)NULL);
 	        printf("If you see this statement then execl failed ;-(\n");
 		exit(-1);
-	    } else if (pid > 0) { /* this is the parent process */
+	    } else if (pid > 0) { 
 	        printf("Wait for the child process to terminate\n");
-	        wait(&status); /* wait for the child process to terminate */
-	        if (WIFEXITED(status)) { /* child process terminated normally */
+	        time(&start);
+	        sleep(2);
+	        wait(&status); 
+	        time(&finish);
+	        
+			strcat(new_str, base_items[i]);
+			strcat(new_str, " ");
+			strcat(new_str, ctime(&start));
+			strcat(new_str, " ");
+			strcat(new_str, ctime(&finish));
+			{
+				
+			};
+
+	        if (WIFEXITED(status)) { 
 	            printf("Child process exited with status = %d\n", WEXITSTATUS(status));
-	        } else { /* child process did not terminate normally */
+	        } else { 
 	            printf("Child process did not terminate normally!\n");
-	            /* look at the man page for wait (man 2 wait) to determine
-	 *                how the child process was terminated */
+	           
 	        }
-	    } else { /* we have an error */
-	        perror("fork"); /* use perror to print the system error message */
+	    } else {
+	        perror("fork"); 
 	        exit(EXIT_FAILURE);
 	    }
 
-    printf("[%ld]: Exiting program .....\n", (long)getpid());
-
 }
 
-	//writeFile("output.log", list_items);
+	writeFile("output.log", new_str);
 
 	
 }
