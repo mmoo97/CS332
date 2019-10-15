@@ -8,12 +8,14 @@
 
 #define LINESIZE 1024
 
-char * split(char* array) {
-	char* temp[2];
+char * temp[2];
+
+void split(char* array) {
+	int count = 0;
 	int init_size = strlen(array);
 	char delim[] = " ";
 
-	char *ptr = strtok(str, delim);
+	char *ptr = strtok(array, delim);
 
 	while (ptr != NULL)
 	{
@@ -21,8 +23,6 @@ char * split(char* array) {
 		ptr = strtok(NULL, delim);
 		count++;
 	}
-
-	return temp;
 }
 
 void writeFile(char *dir, char* array[10]){
@@ -30,8 +30,9 @@ void writeFile(char *dir, char* array[10]){
 
 	FILE *f = fopen(dir, "wb");
 	
-	for(i=0;i<5;i++) { // change for big array
+	for(i=0;i<2;i++) { // change for big array
         fprintf(f, "%s", array[i]);
+
      }
 
 	fclose(f);
@@ -65,14 +66,17 @@ int main(int argc, char* argv[]) {
 	pid_t pid;
     int status;
 
+    
     for(i = 0; i < 2; i++){ // change this later
 
-	    pid_t pid;
-    	int status;
+		pid_t pid;
+	    int status;
+
+	    split(list_items[i]);
 
 	    pid = fork();
 	    if (pid == 0) { /* this is child process */
-	        execvp(list_items[i], &list_items[i]);
+	        execl(temp[0], temp[1], (char *)NULL);
 	        printf("If you see this statement then execl failed ;-(\n");
 		exit(-1);
 	    } else if (pid > 0) { /* this is the parent process */
@@ -89,11 +93,10 @@ int main(int argc, char* argv[]) {
 	        perror("fork"); /* use perror to print the system error message */
 	        exit(EXIT_FAILURE);
 	    }
-    
+
     printf("[%ld]: Exiting program .....\n", (long)getpid());
 
 }
-
 
 	//writeFile("output.log", list_items);
 

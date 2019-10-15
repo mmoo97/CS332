@@ -1,2 +1,2 @@
 uname -a
-/sbin/ifconfig
+/sbin/ifconfig -r
