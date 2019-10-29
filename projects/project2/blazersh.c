@@ -47,7 +47,7 @@ char **blazersh_split_line(char *line) { // parse line into array of args
 
   if (!tokens) {
     fprintf(stderr, "blazersh: allocation error\n");
-    exit(EXIT_FAILURE);
+    exit(-1);
   }
 
   token = strtok(line, TOKEN_DELIM);
@@ -60,14 +60,38 @@ char **blazersh_split_line(char *line) { // parse line into array of args
       tokens = realloc(tokens, bufsize * sizeof(char*));
       if (!tokens) {
         fprintf(stderr, "blazersh: allocation error\n");
-        exit(EXIT_FAILURE);
+        exit(-1);
       }
     }
 
     token = strtok(NULL, TOKEN_DELIM);
   }
-  tokens[position] = NULL;
+  tokens[position] = NULL; // make the last postion null to terminate
   return tokens;
+}
+
+int blazersh_launch(char **args) { // execute regular camand line progs with args in new process
+  pid_t pid, wpid;
+  int status;
+
+  pid = fork();
+  if (pid == 0) {
+    // Child process
+    if (execvp(args[0], args) == -1) {
+      perror("blazersh");
+    }
+    exit(-1);
+  } else if (pid < 0) {
+    // Error forking
+    perror("blazersh");
+  } else {
+    // Parent process
+    do {
+      wpid = waitpid(pid, &status, WUNTRACED);
+    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+  }
+
+  return 1;
 }
 
 int main(int argc, char **argv) {
@@ -75,7 +99,9 @@ int main(int argc, char **argv) {
 	startupMessage();
 	char* arg = blazersh_read_line();
 	char** split_args = blazersh_split_line(arg);
-	printf("\n\ninput: %s\n", split_args[0]);
+	//printf("\n\ninput: %s\n", split_args[0]);
+
+  blazersh_launch(split_args);
 
 	return 0;
 }
