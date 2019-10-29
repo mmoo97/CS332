@@ -22,6 +22,7 @@ Project: 2
 
 #define BUFFSIZE 64 
 #define TOKEN_DELIM " \t\r\n\a" // delim args
+#define LINESIZE 1024
 
 // Clearing the shell using escape sequences
 #define clear() printf("\033[H\033[J")
@@ -179,8 +180,23 @@ int help(char **args) { // gives user usage info
 }
 
 int history(char ** args) {
+  // char line[1024];
+  // int count;
+  // FILE *fptr = fopen("blazersh.log", "r");
+  // if(fptr == NULL){
+  //   printf("Error reading input file listings.csv\n");
+  //   exit (-1);
+  // }
 
-  // todo simply print out file with line numbers
+  // count = 0;
+  // while (fgets(line, LINESIZE, fptr) != NULL){
+  //   printf("%s\n", line);;
+  // }
+
+  // fclose(fptr);
+
+  // return 1;
+  
   printf("Not yet implemented :(\n");
 
 }
