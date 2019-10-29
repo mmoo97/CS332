@@ -3,6 +3,7 @@ Resources:
 		https://brennan.io/2015/01/16/write-a-shell-in-c/
 		https://www.geeksforgeeks.org/making-linux-shell-c/
 		http://www.bagill.com/ascii-sig.php
+    https://www.sanfoundry.com/c-program-list-files-directory/
 */
 
 /*
@@ -17,6 +18,7 @@ Project: 2
 #include<unistd.h> 
 #include<sys/types.h> 
 #include<sys/wait.h> 
+#include <dirent.h>
 
 #define BUFFSIZE 64 
 #define TOKEN_DELIM " \t\r\n\a" // delim args
@@ -42,7 +44,7 @@ int (*builtin_func[]) (char **) = {
   &list,
   &cd,
   &help,
-  &history
+  &history,
   &quit
 };
  
@@ -128,6 +130,20 @@ int blazersh_num_builtins() {
 
 int list(char **args) {
 
+    DIR *d;
+    struct dirent *dir;
+    d = opendir(getenv("PWD"));
+    if (d)
+    {
+        while ((dir = readdir(d)) != NULL)
+        {
+            printf("%s\t", dir->d_name);
+        }
+        closedir(d);
+        printf("\n");
+    }
+    return(0);
+
 }
 
 int cd(char **args)
@@ -172,6 +188,7 @@ int main(int argc, char **argv) {
 	startupMessage();
 	char* arg = blazersh_read_line();
 	char** split_args = blazersh_split_line(arg);
+  list(split_args);
 	//printf("\n\ninput: %s\n", split_args[0]);
 
 
