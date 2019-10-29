@@ -124,7 +124,7 @@ int blazersh_launch(char **args) { // execute regular camand line progs with arg
   return 1;
 }
 
-int blazersh_num_builtins() {
+int blazersh_num_builtins() { // simple function to give number of possible builtins
   return sizeof(builtin_str) / sizeof(char *);
 }
 
@@ -132,7 +132,8 @@ int list(char **args) {
 
     DIR *d;
     struct dirent *dir;
-    d = opendir(getenv("PWD"));
+    d = opendir(getenv("PWD")); // open current directory
+    // todo: could implement list to take directory arg instead of implicit dir
     if (d)
     {
         while ((dir = readdir(d)) != NULL)
@@ -146,41 +147,57 @@ int list(char **args) {
 
 }
 
-int cd(char **args)
-{
-  if (args[1] == NULL) {
+int cd(char **args) { 
+  if (args[1] == NULL) { // if no directory given throw expected format
     fprintf(stderr, "blazersh: expected argument to \"cd\"\n");
+    // todo: could implement usage of home environment variable
   } else {
-    if (chdir(args[1]) != 0) {
-      perror("blazersh");
+    if (chdir(args[1]) != 0) { // cd to directory given
+      perror("blazersh"); // throw error if dir doesn't exist
     }
   }
   return 1;
 }
 
-int help(char **args)
-{
+int help(char **args) { // gives user usage info
   int i;
   printf("BlazerShell\n");
   printf("Type program names and arguments, and hit enter.\n");
   printf("The following are built in:\n");
 
-  for (i = 0; i < blazersh_num_builtins(); i++) {
+  for (i = 0; i < blazersh_num_builtins(); i++) { // print every optional internal command
     printf("  %s\n", builtin_str[i]);
   }
 
-  printf("Use the man command for information on other programs.\n");
+  printf("Use the man command for information on other programs.\n"); // should operate as normal
   return 1;
 }
 
 int history(char ** args) {
 
+  // todo simply print out file with line numbers
+
 }
 
-int quit(char **args)
-{
+int quit(char **args) {
   clear();
   return 0;
+}
+
+int blazersh_execute(char **args) { // determines if command is internal or not and executes
+  int i;
+
+  if (args[0] == NULL) { // If empty command entered
+    return 1;
+  }
+
+  for (i = 0; i < blazersh_num_builtins(); i++) { 
+    if (strcmp(args[0], builtin_str[i]) == 0) { // check if any of the buld in functons called
+      return (*builtin_func[i])(args); // execute build in with args
+    }
+  }
+
+  return blazersh_launch(args); // otherwise, execute the non internal commands
 }
 
 int main(int argc, char **argv) {
