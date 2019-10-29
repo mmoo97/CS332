@@ -59,7 +59,7 @@ void startupMessage() { //welcome message when entering shell
     printf("|____/|_|\\__,_/___\\___|_|  |____/|_| |_|\\___|_|_|\n");
     char* username = getenv("USER"); 
     printf("\n\nUser:\t%s\n\n\n", username); 
-    sleep(2); 
+    sleep(1); 
    
 } 
 
@@ -104,7 +104,7 @@ int blazersh_launch(char **args) { // execute regular camand line progs with arg
   pid_t pid, wpid;
   int status;
 
-  pid = fork();
+  pid = fork(); 
   if (pid == 0) {
     // Child process
     if (execvp(args[0], args) == -1) {
@@ -176,11 +176,12 @@ int help(char **args) { // gives user usage info
 int history(char ** args) {
 
   // todo simply print out file with line numbers
+  printf("Not yet implemented :(\n");
 
 }
 
 int quit(char **args) {
-  clear();
+  clear(); // resets the prompt screen
   return 0;
 }
 
@@ -200,15 +201,27 @@ int blazersh_execute(char **args) { // determines if command is internal or not 
   return blazersh_launch(args); // otherwise, execute the non internal commands
 }
 
+void blazersh_loop(void) { // creates a command loop until user calls quit function.
+  char *line;
+  char **args;
+  int status;
+
+  do {
+    printf("blazersh> "); // show prompt
+    line = blazersh_read_line(); // take in line input as single array of chars
+    args = blazersh_split_line(line); // split it and tokenize into individual args
+    status = blazersh_execute(args); // status code of executed args. zero will end loop. (using quit functon)
+
+    free(line); // clear var
+    free(args); // clear var
+  } while (status); // run function infinitely until return code of 0 is given
+}
+
 int main(int argc, char **argv) {
 
-	startupMessage();
-	char* arg = blazersh_read_line();
-	char** split_args = blazersh_split_line(arg);
-  list(split_args);
+	startupMessage(); 
+	blazersh_loop(); 
 	//printf("\n\ninput: %s\n", split_args[0]);
-
-
 
 	return 0;
 }
