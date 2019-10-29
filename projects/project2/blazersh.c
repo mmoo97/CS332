@@ -17,6 +17,12 @@ Resources:
 
 // Clearing the shell using escape sequences
 #define clear() printf("\033[H\033[J")
+
+int list(char **args);
+int cd(char **args);
+int help(char **args);
+int quit(char **args);
+int history(char **args);
  
 
 void startupMessage() { //welcome message when entering shell 
