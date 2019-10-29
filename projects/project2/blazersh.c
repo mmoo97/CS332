@@ -5,6 +5,12 @@ Resources:
 		http://www.bagill.com/ascii-sig.php
 */
 
+/*
+Name: Mitchell Moore
+BlazerId:mmoo97
+Project: 2
+*/
+
 #include<stdio.h> 
 #include<string.h> 
 #include<stdlib.h> 
@@ -23,6 +29,22 @@ int cd(char **args);
 int help(char **args);
 int quit(char **args);
 int history(char **args);
+
+char *builtin_str[] = {
+  "list",
+  "cd",
+  "help",
+  "history",
+  "quit"
+};
+
+int (*builtin_func[]) (char **) = {
+  &list,
+  &cd,
+  &help,
+  &history
+  &quit
+};
  
 
 void startupMessage() { //welcome message when entering shell 
@@ -100,6 +122,51 @@ int blazersh_launch(char **args) { // execute regular camand line progs with arg
   return 1;
 }
 
+int blazersh_num_builtins() {
+  return sizeof(builtin_str) / sizeof(char *);
+}
+
+int list(char **args) {
+
+}
+
+int cd(char **args)
+{
+  if (args[1] == NULL) {
+    fprintf(stderr, "blazersh: expected argument to \"cd\"\n");
+  } else {
+    if (chdir(args[1]) != 0) {
+      perror("blazersh");
+    }
+  }
+  return 1;
+}
+
+int help(char **args)
+{
+  int i;
+  printf("BlazerShell\n");
+  printf("Type program names and arguments, and hit enter.\n");
+  printf("The following are built in:\n");
+
+  for (i = 0; i < blazersh_num_builtins(); i++) {
+    printf("  %s\n", builtin_str[i]);
+  }
+
+  printf("Use the man command for information on other programs.\n");
+  return 1;
+}
+
+int history(char ** args) {
+
+}
+
+int quit(char **args)
+{
+  clear();
+  return 0;
+}
+
 int main(int argc, char **argv) {
 
 	startupMessage();
@@ -107,7 +174,7 @@ int main(int argc, char **argv) {
 	char** split_args = blazersh_split_line(arg);
 	//printf("\n\ninput: %s\n", split_args[0]);
 
-  blazersh_launch(split_args);
+
 
 	return 0;
 }
