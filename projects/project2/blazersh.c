@@ -136,6 +136,7 @@ int list(char **args) {
     struct dirent *dir;
     d = opendir(getenv("PWD")); // open current directory
     // todo: could implement list to take directory arg instead of implicit dir
+    printf("%s\n", getenv("PWD"));
     if (d)
     {
         while ((dir = readdir(d)) != NULL)
@@ -156,6 +157,8 @@ int cd(char **args) {
   } else {
     if (chdir(args[1]) != 0) { // cd to directory given
       perror("blazersh"); // throw error if dir doesn't exist
+    }else {
+      printf("%s\n", getenv("PWD"));
     }
   }
   return 1;
@@ -205,25 +208,34 @@ int blazersh_execute(char **args) { // determines if command is internal or not 
 
 void blazersh_loop(void) { // creates a command loop until user calls quit function.
   char *line;
-  char *current_dir = getenv("PWD");
+  char *current_dir;
+  char *temp_dir = malloc(1024 * sizeof(char*));
   char **args;
   int status;
   int line_num = 1;
 
-  FILE *f = fopen(strcat(current_dir, "/blazersh.log"), "wb");
+  current_dir = getenv("PWD");
+  strcat(temp_dir, current_dir);
+  //free(current_dir);
+
+  FILE *f = fopen(strcat(temp_dir, "/blazersh.log"), "wb");
 
   do {
     printf("blazersh> "); // show prompt
     line = blazersh_read_line(); // take in line input as single array of chars
+    line_num++;
     fprintf(f, "  %d  %s", line_num, line); // write history to file
     args = blazersh_split_line(line); // split it and tokenize into individual args
     status = blazersh_execute(args); // status code of executed args. zero will end loop. (using quit functon)
 
     free(line); // clear var
     free(args); // clear var
+    
 
-    line_num++;
+  
   } while (status); // run function infinitely until return code of 0 is given
+  
+  free(temp_dir);
   fclose(f);
 }
 
@@ -231,7 +243,6 @@ int main(int argc, char **argv) {
 
 	startupMessage(); 
 	blazersh_loop(); 
-	//printf("\n\ninput: %s\n", split_args[0]);
 
 	return 0;
 }
