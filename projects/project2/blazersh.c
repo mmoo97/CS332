@@ -223,7 +223,6 @@ void blazersh_loop(void) { // creates a command loop until user calls quit funct
   do {
     printf("blazersh> "); // show prompt
     line = blazersh_read_line(); // take in line input as single array of chars
-    line_num++;
     fprintf(f, "  %d  %s", line_num, line); // write history to file
     args = blazersh_split_line(line); // split it and tokenize into individual args
     status = blazersh_execute(args); // status code of executed args. zero will end loop. (using quit functon)
@@ -231,7 +230,7 @@ void blazersh_loop(void) { // creates a command loop until user calls quit funct
     free(line); // clear var
     free(args); // clear var
     
-
+    line_num++;
   
   } while (status); // run function infinitely until return code of 0 is given
   
