@@ -11,18 +11,15 @@ Resources:
 #include<unistd.h> 
 #include<sys/types.h> 
 #include<sys/wait.h> 
-#include<readline/readline.h> 
-#include<readline/history.h> 
 
-#define MAXLETTERS 1000 
-#define MAXCOMMANDS 100
+#define BUFFSIZE 64 
+#define TOKEN_DELIM " \t\r\n\a" // delim args
 
 // Clearing the shell using escape sequences
 #define clear() printf("\033[H\033[J")
  
 
-void startupMessage() 
-{ 
+void startupMessage() { //welcome message when entering shell 
     clear();
     printf("Welcome to"); 
     printf("\n\n ____  _                    ____  _          _ _ \n"); 
@@ -43,11 +40,42 @@ char *blazersh_read_line(void) {
   return line;
 }
 
+char **blazersh_split_line(char *line) { // parse line into array of args
+  int bufsize = BUFFSIZE, position = 0;
+  char **tokens = malloc(bufsize * sizeof(char*));
+  char *token;
+
+  if (!tokens) {
+    fprintf(stderr, "blazersh: allocation error\n");
+    exit(EXIT_FAILURE);
+  }
+
+  token = strtok(line, TOKEN_DELIM);
+  while (token != NULL) {
+    tokens[position] = token;
+    position++;
+
+    if (position >= bufsize) {
+      bufsize += BUFFSIZE;
+      tokens = realloc(tokens, bufsize * sizeof(char*));
+      if (!tokens) {
+        fprintf(stderr, "blazersh: allocation error\n");
+        exit(EXIT_FAILURE);
+      }
+    }
+
+    token = strtok(NULL, TOKEN_DELIM);
+  }
+  tokens[position] = NULL;
+  return tokens;
+}
+
 int main(int argc, char **argv) {
 
 	startupMessage();
 	char* arg = blazersh_read_line();
-	printf("\n\ninput: %s", arg);
+	char** split_args = blazersh_split_line(arg);
+	printf("\n\ninput: %s\n", split_args[0]);
 
 	return 0;
 }
