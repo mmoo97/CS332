@@ -58,7 +58,9 @@ void startupMessage() { //welcome message when entering shell
     printf("| |_) | | (_| |/ /  __/ |   ___) | | | |  __/ | |\n");
     printf("|____/|_|\\__,_/___\\___|_|  |____/|_| |_|\\___|_|_|\n");
     char* username = getenv("USER"); 
+    char* pwd = getenv("PWD");
     printf("\n\nUser:\t%s\n\n\n", username); 
+
     sleep(1); 
    
 } 
@@ -143,7 +145,7 @@ int list(char **args) {
         closedir(d);
         printf("\n");
     }
-    return(0);
+    return 1;
 
 }
 
@@ -203,18 +205,26 @@ int blazersh_execute(char **args) { // determines if command is internal or not 
 
 void blazersh_loop(void) { // creates a command loop until user calls quit function.
   char *line;
+  char *current_dir = getenv("PWD");
   char **args;
   int status;
+  int line_num = 1;
+
+  FILE *f = fopen(strcat(current_dir, "/blazersh.log"), "wb");
 
   do {
     printf("blazersh> "); // show prompt
     line = blazersh_read_line(); // take in line input as single array of chars
+    fprintf(f, "  %d  %s", line_num, line); // write history to file
     args = blazersh_split_line(line); // split it and tokenize into individual args
     status = blazersh_execute(args); // status code of executed args. zero will end loop. (using quit functon)
 
     free(line); // clear var
     free(args); // clear var
+
+    line_num++;
   } while (status); // run function infinitely until return code of 0 is given
+  fclose(f);
 }
 
 int main(int argc, char **argv) {
