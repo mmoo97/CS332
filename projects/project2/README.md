@@ -15,4 +15,4 @@ Instructions for building the software
 	Simply compile and start shell and run commands shown by calling `help`
 7. Screenshots/Sample Session
 
-![]("example.png")
+![](example.png)
