@@ -1,17 +1,27 @@
+/*
+Resources: 
+		https://brennan.io/2015/01/16/write-a-shell-in-c/
+		https://www.geeksforgeeks.org/making-linux-shell-c/
+		http://www.bagill.com/ascii-sig.php
+*/
+
 #include<stdio.h> 
 #include<string.h> 
 #include<stdlib.h> 
 #include<unistd.h> 
 #include<sys/types.h> 
 #include<sys/wait.h> 
+#include<readline/readline.h> 
+#include<readline/history.h> 
 
 #define MAXLETTERS 1000 
 #define MAXCOMMANDS 100
 
 // Clearing the shell using escape sequences
 #define clear() printf("\033[H\033[J")
+ 
 
-void startup_message() 
+void startupMessage() 
 { 
     clear();
     printf("Welcome to"); 
@@ -26,7 +36,18 @@ void startup_message()
    
 } 
 
+char *blazersh_read_line(void) {
+  char *line = NULL;
+  size_t bufsize = 0; 
+  getline(&line, &bufsize, stdin);
+  return line;
+}
+
 int main(int argc, char **argv) {
-	startup_message(); 
+
+	startupMessage();
+	char* arg = blazersh_read_line();
+	printf("\n\ninput: %s", arg);
+
 	return 0;
 }
