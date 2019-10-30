@@ -8,6 +8,18 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <signal.h>
+
+static void sig_handle(int signo){
+/* argument is signal number */
+    if (signo == SIGINT)
+        printf("received SIGUSR1\n");
+    else if (signo == SIGSTOP)
+        printf("received SIGUSR2\n");
+    else
+        printf("you\n");
+        //err_dump("received signal %d\n", signo);
+}
 
 int main(int argc, char **argv) {
     pid_t pid;
@@ -22,10 +34,13 @@ int main(int argc, char **argv) {
     if (pid == 0) { /* this is child process */
         execvp(argv[1], &argv[1]);
         printf("If you see this statement then execl failed ;-(\n");
-	exit(-1);
+        exit(-1);
     } else if (pid > 0) { /* this is the parent process */
+        signal(SIGINT, SIG_IGN);
+        signal(SIGTSTP, SIG_IGN);
         printf("Wait for the child process to terminate\n");
         wait(&status); /* wait for the child process to terminate */
+        
         if (WIFEXITED(status)) { /* child process terminated normally */
             printf("Child process exited with status = %d\n", WEXITSTATUS(status));
         } else { /* child process did not terminate normally */
@@ -33,6 +48,8 @@ int main(int argc, char **argv) {
             /* look at the man page for wait (man 2 wait) to determine
                how the child process was terminated */
         }
+        for ( ; ; ) 
+            pause();
     } else { /* we have an error */
         perror("fork"); /* use perror to print the system error message */
         exit(EXIT_FAILURE);
