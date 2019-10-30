@@ -10,17 +10,6 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-static void sig_handle(int signo){
-/* argument is signal number */
-    if (signo == SIGINT)
-        printf("received SIGUSR1\n");
-    else if (signo == SIGSTOP)
-        printf("received SIGUSR2\n");
-    else
-        printf("you\n");
-        //err_dump("received signal %d\n", signo);
-}
-
 int main(int argc, char **argv) {
     pid_t pid;
     int status;
