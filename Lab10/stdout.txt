@@ -1,0 +1,2 @@
+Please enter your name: [stdout]: Hello Mitchell!
+Hey! This is the parent process
