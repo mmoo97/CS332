@@ -1,2 +1,4 @@
 uname -a
 /sbin/ifconfig
+./hw2 500
+./hw2 1000
