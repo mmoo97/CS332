@@ -1,6 +1,6 @@
 1. Project 2
 
-2. Create a BlazerShell
+2. Extend BlazerShell Functionalioty
 
 3. Mitchell Moore
 
