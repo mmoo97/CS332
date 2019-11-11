@@ -32,13 +32,17 @@ int cd(char **args);
 int help(char **args);
 int quit(char **args);
 int history(char **args);
+int jobs(char **args);
+int cont(char **args);
 
 char *builtin_str[] = {
   "list",
   "cd",
   "help",
   "history",
-  "quit"
+  "quit",
+  "jobs",
+  "cont"
 };
 
 int (*builtin_func[]) (char **) = {
@@ -46,7 +50,9 @@ int (*builtin_func[]) (char **) = {
   &cd,
   &help,
   &history,
-  &quit
+  &quit,
+  &jobs,
+  &cont
 };
  
 
@@ -110,19 +116,35 @@ int blazersh_launch(char **args) { // execute regular camand line progs with arg
   pid = fork(); 
   if (pid == 0) {
     // Child process
-    if (execvp(args[0], args) == -1) {
+    if (execvp(args[0], &args[0]) == -1) {
       perror("blazersh");
     }
     exit(-1);
-  } else if (pid < 0) {
+  } else if (pid > 0){
+    // Parent process
+
+    signal(SIGINT, SIG_IGN);
+    signal(SIGTSTP, SIG_IGN);
+
+    wpid = waitpid(pid, &status, WUNTRACED);
+        
+    if (WIFEXITED(status)) { /* child process terminated normally */
+        //printf("Child process exited with status = %d\n", WEXITSTATUS(status));
+    } else if(WIFSTOPPED(status)) {
+        printf("Process with pid=%d has been STOPPED\n", pid);
+    } else if(WTERMSIG(status) == 2) {
+        printf("Process with pid=%d has been INTERRUPTED...\n", wpid);
+    } else { /* child process did not terminate normally */
+        printf("Child process did not terminate normally!\n");
+        
+        /* look at the man page for wait (man 2 wait) to determine
+           how the child process was terminated */
+    }
+  } else {
     // Error forking
     perror("blazersh");
-  } else {
-    // Parent process
-    do {
-      wpid = waitpid(pid, &status, WUNTRACED);
-    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
-  }
+  } 
+  
 
   return 1;
 }
@@ -199,6 +221,33 @@ int history(char ** args) {
   
   printf("Not yet implemented :(\n");
 
+}
+
+int jobs(char ** args) {
+  
+  FILE *fp;
+  char path[1035];
+
+  /* Open the command for reading. */
+  
+  if ((fp = popen("jobs", "r")) == NULL) {
+    printf("Failed to run command\n" );
+    exit(1);
+  }
+
+  /* Read the output a line at a time - output it. */
+  while (fgets(path, sizeof(path), fp) != NULL) {
+    printf("%s", path);
+  }
+
+  /* close */
+  pclose(fp);
+
+  return 1;
+}
+
+int cont(char ** args) {
+  printf("continue...\n");
 }
 
 int quit(char **args) {
