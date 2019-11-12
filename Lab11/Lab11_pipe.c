@@ -106,9 +106,10 @@ char **blazersh_split_line(char *line) { // parse line into array of args
 }
 
 int blazersh_launch(char **args, char * line) { // execute regular camand line progs with args in new process
-  pid_t pid, wpid;
-  int status;
-  FILE *fp1, *fp2;
+  // pid_t pid, wpid;
+  // int status;
+  FILE *fp1;
+  //FILE *fp2;
 
   char output[BUFSIZ];
 
@@ -250,7 +251,7 @@ void blazersh_loop(void) { // creates a command loop until user calls quit funct
   char *line;
   char **args;
   int status;
-  char *line2;
+  char line2[BUFSIZ];
 
   do {
     printf("Enter Command: "); // show prompt
