@@ -110,53 +110,58 @@ char **blazersh_split_line(char *line) { // parse line into array of args
   return tokens;
 }
 
-int blazersh_launch(char **args) { // execute regular camand line progs with args in new process
+int blazersh_launch(char **args, char *line) { // execute regular camand line progs with args in new process
   pid_t pid, wpid;
   int status;
+  FILE *fp1, *fp2;
+  char output[1024];
 
-  if ((fp1 = popen(args[0], "r")) == NULL) {
+  if ((fp1 = popen(line, "r")) == NULL) {
     perror("popen");
     exit(EXIT_FAILURE);
   }
+
+  fgets(output, 1024, fp1);
+  printf("%s\n", output);
 
     /* create a pipe, fork/exec command argv[2], in "write" mode */
     /* write mode - parent process writes to stdin of child process */
-  if ((fp2 = popen(argv[2], "w")) == NULL) {
-    perror("popen");
-    exit(EXIT_FAILURE);
-  }
+  // if ((fp2 = popen(argv[2], "w")) == NULL) {
+  //   perror("popen");
+  //   exit(EXIT_FAILURE);
+  // }
 
-  pid = fork(); 
-  if (pid == 0) {
-    // Child process
-    if (execvp(args[0], &args[0]) == -1) {
-      perror("blazersh");
-    }
-    exit(-1);
-  } else if (pid > 0){
-    // Parent process
+  // pid = fork(); 
+  // if (pid == 0) {
+  //   // Child process
+  //   if (fp1 == -1) {
+  //     perror("blazersh");
+  //   }
+  //   exit(-1);
+  // } else if (pid > 0){
+  //   // Parent process
 
-    signal(SIGINT, SIG_IGN);
-    signal(SIGTSTP, SIG_IGN);
+  //   signal(SIGINT, SIG_IGN);
+  //   signal(SIGTSTP, SIG_IGN);
 
-    wpid = waitpid(pid, &status, WUNTRACED);
+  //   wpid = waitpid(pid, &status, WUNTRACED);
         
-    if (WIFEXITED(status)) { /* child process terminated normally */
-        //printf("Child process exited with status = %d\n", WEXITSTATUS(status));
-    } else if(WIFSTOPPED(status)) {
-        printf("Process with pid=%d has been STOPPED\n", pid);
-    } else if(WTERMSIG(status) == 2) {
-        printf("Process with pid=%d has been INTERRUPTED...\n", wpid);
-    } else { /* child process did not terminate normally */
-        printf("Child process did not terminate normally!\n");
+  //   if (WIFEXITED(status)) { /* child process terminated normally */
+  //       //printf("Child process exited with status = %d\n", WEXITSTATUS(status));
+  //   } else if(WIFSTOPPED(status)) {
+  //       printf("Process with pid=%d has been STOPPED\n", pid);
+  //   } else if(WTERMSIG(status) == 2) {
+  //       printf("Process with pid=%d has been INTERRUPTED...\n", wpid);
+  //   } else { /* child process did not terminate normally */
+  //       printf("Child process did not terminate normally!\n");
         
-        /* look at the man page for wait (man 2 wait) to determine
-           how the child process was terminated */
-    }
-  } else {
-    // Error forking
-    perror("blazersh");
-  } 
+  //       /* look at the man page for wait (man 2 wait) to determine
+  //          how the child process was terminated */
+  //   }
+  // } else {
+  //   // Error forking
+  //   perror("blazersh");
+  // } 
   
 
   return 1;
@@ -281,7 +286,7 @@ int quit(char **args) {
   return 0;
 }
 
-int blazersh_execute(char **args) { // determines if command is internal or not and executes
+int blazersh_execute(char **args, char *line) { // determines if command is internal or not and executes
   int i;
 
   if (args[0] == NULL) { // If empty command entered
@@ -294,11 +299,12 @@ int blazersh_execute(char **args) { // determines if command is internal or not 
     }
   }
 
-  return blazersh_launch(args); // otherwise, execute the non internal commands
+  return blazersh_launch(args, line); // otherwise, execute the non internal commands
 }
 
 void blazersh_loop(void) { // creates a command loop until user calls quit function.
   char *line;
+  char line2[1024];
   char *current_dir;
   char *temp_dir = malloc(1024 * sizeof(char*));
   char **args;
@@ -314,9 +320,10 @@ void blazersh_loop(void) { // creates a command loop until user calls quit funct
   do {
     printf("blazersh> "); // show prompt
     line = blazersh_read_line(); // take in line input as single array of chars
+    strcat(line2, line);
     fprintf(f, "  %d  %s", line_num, line); // write history to file
     args = blazersh_split_line(line); // split it and tokenize into individual args
-    status = blazersh_execute(args); // status code of executed args. zero will end loop. (using quit functon)
+    status = blazersh_execute(args, line2); // status code of executed args. zero will end loop. (using quit functon)
 
     free(line); // clear var
     free(args); // clear var
