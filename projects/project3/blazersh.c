@@ -19,6 +19,7 @@ Project: 2
 #include<sys/types.h> 
 #include<sys/wait.h> 
 #include <dirent.h>
+#include <signal.h>
 
 #define BUFFSIZE 64 
 #define TOKEN_DELIM " \t\r\n\a" // delim args
@@ -220,7 +221,7 @@ int history(char ** args) {
   // return 1;
   
   printf("Not yet implemented :(\n");
-
+  return 1;
 }
 
 int jobs(char ** args) {
@@ -247,8 +248,19 @@ int jobs(char ** args) {
 }
 
 int cont(char ** args) {
-  printf("continue...\n");
-}
+  printf("continue...\n\n");
+
+  int pid;
+  sscanf(args[1], "%d", &pid);
+
+  if (args[1] == NULL) { // if no pid given throw expected format
+    fprintf(stderr, "blazersh: expected argument to \"cont\"\n");
+    // todo: could implement usage of home environment variable
+  } else if ((kill(pid, SIGCONT)) != 0) { // continue process
+      perror("blazersh"); // throw error if dir doesn't exist
+  }
+    return 1;
+  }
 
 int quit(char **args) {
   clear(); // resets the prompt screen
