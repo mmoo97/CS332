@@ -113,58 +113,39 @@ char **blazersh_split_line(char *line) { // parse line into array of args
 int blazersh_launch(char **args, char * line) { // execute regular camand line progs with args in new process
   pid_t pid, wpid;
   int status;
-  FILE *fp1, *fp2;
   char output[BUFSIZ];
 
-  if ((fp1 = popen(line, "w")) == NULL) {
-    perror("popen");
-    exit(EXIT_FAILURE);
-  }
-
-  while (fgets(output, BUFSIZ, fp1) !=NULL){
-      printf("%s", output);
+  pid = fork(); 
+  if (pid == 0) {
+    // Child process
+    if (execvp(args[0], &args[0]) == -1) {
+      perror("blazersh");
     }
+    exit(-1);
+  } else if (pid > 0){
+    // Parent process
 
-  pclose(fp1);
+    signal(SIGINT, SIG_IGN);
+    signal(SIGTSTP, SIG_IGN);
 
-    /* create a pipe, fork/exec command argv[2], in "write" mode */
-    /* write mode - parent process writes to stdin of child process */
-  // if ((fp2 = popen(argv[2], "w")) == NULL) {
-  //   perror("popen");
-  //   exit(EXIT_FAILURE);
-  // }
-
-  // pid = fork(); 
-  // if (pid == 0) {
-  //   // Child process
-  //   if (fp1 == -1) {
-  //     perror("blazersh");
-  //   }
-  //   exit(-1);
-  // } else if (pid > 0){
-  //   // Parent process
-
-  //   signal(SIGINT, SIG_IGN);
-  //   signal(SIGTSTP, SIG_IGN);
-
-  //   wpid = waitpid(pid, &status, WUNTRACED);
+    wpid = waitpid(pid, &status, WUNTRACED);
         
-  //   if (WIFEXITED(status)) { /* child process terminated normally */
-  //       //printf("Child process exited with status = %d\n", WEXITSTATUS(status));
-  //   } else if(WIFSTOPPED(status)) {
-  //       printf("Process with pid=%d has been STOPPED\n", pid);
-  //   } else if(WTERMSIG(status) == 2) {
-  //       printf("Process with pid=%d has been INTERRUPTED...\n", wpid);
-  //   } else { /* child process did not terminate normally */
-  //       printf("Child process did not terminate normally!\n");
+    if (WIFEXITED(status)) { /* child process terminated normally */
+        //printf("Child process exited with status = %d\n", WEXITSTATUS(status));
+    } else if(WIFSTOPPED(status)) {
+        printf("Process with pid=%d has been STOPPED\n", pid);
+    } else if(WTERMSIG(status) == 2) {
+        printf("Process with pid=%d has been INTERRUPTED...\n", wpid);
+    } else { /* child process did not terminate normally */
+        printf("Child process did not terminate normally!\n");
         
-  //       /* look at the man page for wait (man 2 wait) to determine
-  //          how the child process was terminated */
-  //   }
-  // } else {
-  //   // Error forking
-  //   perror("blazersh");
-  // } 
+        /* look at the man page for wait (man 2 wait) to determine
+           how the child process was terminated */
+    }
+  } else {
+    // Error forking
+    perror("blazersh");
+  } 
   
 
   return 1;
