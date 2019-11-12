@@ -110,19 +110,22 @@ char **blazersh_split_line(char *line) { // parse line into array of args
   return tokens;
 }
 
-int blazersh_launch(char **args, char *line) { // execute regular camand line progs with args in new process
+int blazersh_launch(char **args, char * line) { // execute regular camand line progs with args in new process
   pid_t pid, wpid;
   int status;
   FILE *fp1, *fp2;
-  char output[1024];
+  char output[BUFSIZ];
 
-  if ((fp1 = popen(line, "r")) == NULL) {
+  if ((fp1 = popen(line, "w")) == NULL) {
     perror("popen");
     exit(EXIT_FAILURE);
   }
 
-  fgets(output, 1024, fp1);
-  printf("%s\n", output);
+  while (fgets(output, BUFSIZ, fp1) !=NULL){
+      printf("%s", output);
+    }
+
+  pclose(fp1);
 
     /* create a pipe, fork/exec command argv[2], in "write" mode */
     /* write mode - parent process writes to stdin of child process */
@@ -247,11 +250,12 @@ int jobs(char ** args) {
   char path[1035];
 
   /* Open the command for reading. */
-  
-  if ((fp = popen("ps", "r")) == NULL) {
+  if ((fp = popen("jobs", "r")) == NULL) {
     printf("Failed to run command\n" );
     exit(1);
   }
+
+  printf("PID\tProcess\n");
 
   /* Read the output a line at a time - output it. */
   while (fgets(path, sizeof(path), fp) != NULL) {
@@ -304,7 +308,7 @@ int blazersh_execute(char **args, char *line) { // determines if command is inte
 
 void blazersh_loop(void) { // creates a command loop until user calls quit function.
   char *line;
-  char line2[1024];
+  char line2[BUFSIZ];
   char *current_dir;
   char *temp_dir = malloc(1024 * sizeof(char*));
   char **args;
@@ -320,7 +324,7 @@ void blazersh_loop(void) { // creates a command loop until user calls quit funct
   do {
     printf("blazersh> "); // show prompt
     line = blazersh_read_line(); // take in line input as single array of chars
-    strcat(line2, line);
+    strcpy(line2, line);
     fprintf(f, "  %d  %s", line_num, line); // write history to file
     args = blazersh_split_line(line); // split it and tokenize into individual args
     status = blazersh_execute(args, line2); // status code of executed args. zero will end loop. (using quit functon)
