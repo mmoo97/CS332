@@ -105,26 +105,48 @@ char **blazersh_split_line(char *line) { // parse line into array of args
   return tokens;
 }
 
-int blazersh_launch(char **args) { // execute regular camand line progs with args in new process
+int blazersh_launch(char **args, char * line) { // execute regular camand line progs with args in new process
   pid_t pid, wpid;
   int status;
+  FILE *fp1, *fp2;
 
-  pid = fork(); 
-  if (pid == 0) {
-    // Child process
-    if (execvp(args[0], args) == -1) {
-      perror("blazersh");
+  char output[BUFSIZ];
+
+  if ((fp1 = popen(line, "w")) == NULL) {
+  perror("popen");
+  exit(EXIT_FAILURE);
     }
-    exit(-1);
-  } else if (pid < 0) {
-    // Error forking
-    perror("blazersh");
-  } else {
-    // Parent process
-    do {
-      wpid = waitpid(pid, &status, WUNTRACED);
-    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
-  }
+
+    while (fgets(output, BUFSIZ, fp1) !=NULL){
+      printf("%s", output);
+    }
+    
+
+    pclose(fp1);
+
+    /* create a pipe, fork/exec command argv[2], in "write" mode */
+    /* write mode - parent process writes to stdin of child process */
+  //   if ((fp2 = popen(argv[2], "w")) == NULL) {
+  // perror("popen");
+  // exit(EXIT_FAILURE);
+  //   }
+
+  // pid = fork(); 
+  // if (pid == 0) {
+  //   // Child process
+  //   if (system(line) == -1) {
+  //     perror("blazersh");
+  //   }
+  //   exit(-1);
+  // } else if (pid < 0) {
+  //   // Error forking
+  //   perror("blazersh");
+  // } else {
+  //   // Parent process
+  //   do {
+  //     wpid = waitpid(pid, &status, WUNTRACED);
+  //   } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+  // }
 
   return 1;
 }
@@ -208,7 +230,7 @@ int quit(char **args) {
   return 0;
 }
 
-int blazersh_execute(char **args) { // determines if command is internal or not and executes
+int blazersh_execute(char **args, char* line) { // determines if command is internal or not and executes
   int i;
 
   if (args[0] == NULL) { // If empty command entered
@@ -221,39 +243,27 @@ int blazersh_execute(char **args) { // determines if command is internal or not 
     }
   }
 
-  return blazersh_launch(args); // otherwise, execute the non internal commands
+  return blazersh_launch(args, line); // otherwise, execute the non internal commands
 }
 
 void blazersh_loop(void) { // creates a command loop until user calls quit function.
   char *line;
-  char *current_dir;
-  char *temp_dir = malloc(1024 * sizeof(char*));
   char **args;
   int status;
-  int line_num = 1;
-
-  current_dir = getenv("PWD");
-  strcat(temp_dir, current_dir);
-  //free(current_dir);
-
-  FILE *f = fopen(strcat(temp_dir, "/blazersh.log"), "wb");
+  char *line2;
 
   do {
     printf("Enter Command: "); // show prompt
     line = blazersh_read_line(); // take in line input as single array of chars
-    fprintf(f, "  %d  %s", line_num, line); // write history to file
+    strcpy(line2, line);
     args = blazersh_split_line(line); // split it and tokenize into individual args
-    status = blazersh_execute(args); // status code of executed args. zero will end loop. (using quit functon)
+    status = blazersh_execute(args, line2); // status code of executed args. zero will end loop. (using quit functon)
 
     free(line); // clear var
     free(args); // clear var
-    
-    line_num++;
   
   } while (status); // run function infinitely until return code of 0 is given
   
-  free(temp_dir);
-  fclose(f);
 }
 
 int main(int argc, char **argv) {
