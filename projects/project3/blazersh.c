@@ -114,6 +114,18 @@ int blazersh_launch(char **args) { // execute regular camand line progs with arg
   pid_t pid, wpid;
   int status;
 
+  if ((fp1 = popen(args[0], "r")) == NULL) {
+    perror("popen");
+    exit(EXIT_FAILURE);
+  }
+
+    /* create a pipe, fork/exec command argv[2], in "write" mode */
+    /* write mode - parent process writes to stdin of child process */
+  if ((fp2 = popen(argv[2], "w")) == NULL) {
+    perror("popen");
+    exit(EXIT_FAILURE);
+  }
+
   pid = fork(); 
   if (pid == 0) {
     // Child process
@@ -231,7 +243,7 @@ int jobs(char ** args) {
 
   /* Open the command for reading. */
   
-  if ((fp = popen("jobs", "r")) == NULL) {
+  if ((fp = popen("ps", "r")) == NULL) {
     printf("Failed to run command\n" );
     exit(1);
   }
@@ -249,16 +261,18 @@ int jobs(char ** args) {
 
 int cont(char ** args) {
   printf("continue...\n\n");
-
+  int result;
   int pid;
   sscanf(args[1], "%d", &pid);
 
   if (args[1] == NULL) { // if no pid given throw expected format
     fprintf(stderr, "blazersh: expected argument to \"cont\"\n");
     // todo: could implement usage of home environment variable
-  } else if ((kill(pid, SIGCONT)) != 0) { // continue process
+  } else if ((result = kill(pid, SIGCONT)) != 0) { // continue process
       perror("blazersh"); // throw error if dir doesn't exist
   }
+    if (result == 0)
+      printf("Process %s started.\n", args[1]);
     return 1;
   }
 
