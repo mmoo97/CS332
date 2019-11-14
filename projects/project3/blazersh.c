@@ -28,6 +28,8 @@ Project: 2
 // Clearing the shell using escape sequences
 #define clear() printf("\033[H\033[J")
 
+pid_t pid;
+
 int list(char **args);
 int cd(char **args);
 int help(char **args);
@@ -110,8 +112,20 @@ char **blazersh_split_line(char *line) { // parse line into array of args
   return tokens;
 }
 
+static void sig_usr(int signo) {
+  switch(signo) {
+     case SIGINT: 
+        kill(pid, SIGINT);
+    break;
+     case SIGTSTP:
+        kill(pid, SIGTSTP);
+    break;
+     default:
+    printf("received signal %d\n", signo);
+  }
+}
+
 int blazersh_launch(char **args, char * line) { // execute regular camand line progs with args in new process
-  pid_t pid, wpid;
   int status;
   char output[BUFSIZ];
 
@@ -125,17 +139,17 @@ int blazersh_launch(char **args, char * line) { // execute regular camand line p
   } else if (pid > 0){
     // Parent process
 
-    signal(SIGINT, SIG_IGN);
-    signal(SIGTSTP, SIG_IGN);
+    signal(SIGINT, sig_usr);
+    signal(SIGTSTP, sig_usr);
 
-    wpid = waitpid(pid, &status, WUNTRACED);
+    waitpid(pid, &status, WUNTRACED);
         
     if (WIFEXITED(status)) { /* child process terminated normally */
         //printf("Child process exited with status = %d\n", WEXITSTATUS(status));
     } else if(WIFSTOPPED(status)) {
         printf("Process with pid=%d has been STOPPED\n", pid);
     } else if(WTERMSIG(status) == 2) {
-        printf("Process with pid=%d has been INTERRUPTED...\n", wpid);
+        printf("Process with pid=%d has been INTERRUPTED...\n", pid);
     } else { /* child process did not terminate normally */
         printf("Child process did not terminate normally!\n");
         
@@ -145,6 +159,7 @@ int blazersh_launch(char **args, char * line) { // execute regular camand line p
   } else {
     // Error forking
     perror("blazersh");
+    exit(EXIT_FAILURE);
   } 
   
 
@@ -252,13 +267,13 @@ int jobs(char ** args) {
 int cont(char ** args) {
   printf("continue...\n\n");
   int result;
-  int pid;
-  sscanf(args[1], "%d", &pid);
+  int lpid;
+  sscanf(args[1], "%d", &lpid);
 
-  if (args[1] == NULL) { // if no pid given throw expected format
+  if (args[1] == NULL) { // if no lpid given throw expected format
     fprintf(stderr, "blazersh: expected argument to \"cont\"\n");
     // todo: could implement usage of home environment variable
-  } else if ((result = kill(pid, SIGCONT)) != 0) { // continue process
+  } else if ((result = kill(lpid, SIGCONT)) != 0) { // continue process
       perror("blazersh"); // throw error if dir doesn't exist
   }
     if (result == 0)
