@@ -32,7 +32,7 @@ pid_t pid;
 
 struct Job_entry
 {
-  char * p_name[100];
+  char p_name[BUFSIZ];
   int l_pid;
 };
 
@@ -127,9 +127,11 @@ static void sig_usr(int signo) {
     break;
      case SIGTSTP:
         kill(pid, SIGTSTP);
-        char command[50] = "cat /proc/";
+        char command[50] = "/proc/";
         char tempid[10];
+        printf("%d\n", pid);
         snprintf(tempid, 10, "%d", pid);
+        printf("%d\n", pid);
         strcat(command, tempid);
         strcat(command, "/cmdline");
 
@@ -152,7 +154,7 @@ static void sig_usr(int signo) {
         fclose(file);
     
         struct Job_entry entry= {name, pid};
-        printf("%s %d\n", entry.name, entry.pid);
+        printf("%s %d\n", entry.p_name, entry.l_pid);
         entries[pid] = entry;
     break;
      default:
