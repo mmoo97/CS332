@@ -30,6 +30,14 @@ Project: 2
 
 pid_t pid;
 
+struct Job_entry
+{
+  char * p_name[100];
+  int l_pid;
+};
+
+struct Job_entry entries[100000];
+
 int list(char **args);
 int cd(char **args);
 int help(char **args);
@@ -119,6 +127,33 @@ static void sig_usr(int signo) {
     break;
      case SIGTSTP:
         kill(pid, SIGTSTP);
+        char command[50] = "cat /proc/";
+        char tempid[10];
+        snprintf(tempid, 10, "%d", pid);
+        strcat(command, tempid);
+        strcat(command, "/cmdline");
+
+        char line[BUFSIZ];
+        char name[BUFSIZ];
+
+        FILE *file = fopen(command, "r");
+
+        if(file == NULL){
+          printf("Error reading input file input.txt\n");
+          exit (-1);
+        }
+
+        while(fgets(line, BUFSIZ, file)) {
+          strcpy(name, line);
+        }
+
+        printf("%s\n", name);
+
+        fclose(file);
+    
+        struct Job_entry entry= {name, pid};
+        printf("%s %d\n", entry.name, entry.pid);
+        entries[pid] = entry;
     break;
      default:
     printf("received signal %d\n", signo);
