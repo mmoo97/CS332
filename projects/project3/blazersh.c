@@ -29,6 +29,7 @@ Project: 2
 #define clear() printf("\033[H\033[J")
 
 pid_t pid;
+int num_jobs = 0;
 
 struct Job_entry
 {
@@ -36,7 +37,7 @@ struct Job_entry
   int l_pid;
 };
 
-struct Job_entry entries[100000];
+struct Job_entry * entries[50];
 
 int list(char **args);
 int cd(char **args);
@@ -65,6 +66,18 @@ int (*builtin_func[]) (char **) = {
   &jobs,
   &cont
 };
+
+struct Job_entry *createJobEntry(char *p_name, int l_pid) {
+
+  struct Job_entry *p = malloc(sizeof(struct Job_entry));
+
+  p->l_pid = l_pid;
+
+  strcpy(p->p_name, p_name);
+
+  return p;
+
+}
  
 
 void startupMessage() { //welcome message when entering shell 
@@ -129,14 +142,12 @@ static void sig_usr(int signo) {
         kill(pid, SIGTSTP);
         char command[50] = "/proc/";
         char tempid[10];
-        printf("%d\n", pid);
         snprintf(tempid, 10, "%d", pid);
-        printf("%d\n", pid);
         strcat(command, tempid);
         strcat(command, "/cmdline");
 
         char line[BUFSIZ];
-        char name[BUFSIZ];
+        char *name = malloc(1024 * sizeof(char*));
 
         FILE *file = fopen(command, "r");
 
@@ -153,9 +164,12 @@ static void sig_usr(int signo) {
 
         fclose(file);
     
-        struct Job_entry entry= {name, pid};
-        printf("%s %d\n", entry.p_name, entry.l_pid);
-        entries[pid] = entry;
+        entries[num_jobs] = createJobEntry(name, pid);
+        num_jobs++;
+        //printf("%s %d\n", entries[pid]->p_name, entries[pid]->l_pid);
+        
+
+        free(name);
     break;
      default:
     printf("received signal %d\n", signo);
@@ -278,25 +292,14 @@ int history(char ** args) {
 }
 
 int jobs(char ** args) {
-  
-  FILE *fp;
-  char path[1035];
-
-  /* Open the command for reading. */
-  if ((fp = popen("jobs", "r")) == NULL) {
-    printf("Failed to run command\n" );
-    exit(1);
-  }
+  int i;
 
   printf("PID\tProcess\n");
 
-  /* Read the output a line at a time - output it. */
-  while (fgets(path, sizeof(path), fp) != NULL) {
-    printf("%s", path);
+  for(i = 0; i < num_jobs; i++) {
+    printf("%d\t%s\n", entries[i]->l_pid, entries[i]->p_name);
   }
 
-  /* close */
-  pclose(fp);
 
   return 1;
 }
@@ -304,7 +307,7 @@ int jobs(char ** args) {
 int cont(char ** args) {
   printf("continue...\n\n");
   int result;
-  int lpid;
+  int lpid, i;
   sscanf(args[1], "%d", &lpid);
 
   if (args[1] == NULL) { // if no lpid given throw expected format
@@ -314,6 +317,12 @@ int cont(char ** args) {
       perror("blazersh"); // throw error if dir doesn't exist
   }
     if (result == 0)
+      for (i = 0; i < num_jobs; i++) {
+        if (entries[i]->l_pid == lpid) {
+          free(entries[i]);
+          num_jobs--;
+        }
+      }
       printf("Process %s started.\n", args[1]);
     return 1;
   }
