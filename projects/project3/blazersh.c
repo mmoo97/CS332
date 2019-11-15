@@ -300,6 +300,7 @@ int jobs(char ** args) {
     printf("%d\t%s\n", entries[i]->l_pid, entries[i]->p_name);
   }
 
+  printf("\n\nNumber of Jobs: %d\n", num_jobs);
 
   return 1;
 }
