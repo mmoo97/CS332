@@ -1,3 +1,4 @@
 /usr/bin/uname -a
 /sbin/ifconfig -r
 /bin/echo hello
+ls -l
