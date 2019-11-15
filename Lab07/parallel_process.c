@@ -8,7 +8,7 @@
 
 #define LINESIZE 1024
 
-char * temp[2];
+char * temp[10];
 
 void split(char* array) {
 	int count = 0;
@@ -16,6 +16,8 @@ void split(char* array) {
 	char delim[] = " ";
 
 	char *ptr = strtok(array, delim);
+
+	ptr = strtok(array, "\n");
 
 	while (ptr != NULL)
 	{
@@ -63,7 +65,7 @@ int main(int argc, char* argv[]) {
 
 	// printf("%s\n", ctime(&start));
     
-    for(i = 0; i < 3; i++){ // change this later
+    for(i = 0; i < 4; i++){ // change this later
 
 		pid_t pid;
 	    int status;
@@ -72,7 +74,7 @@ int main(int argc, char* argv[]) {
 
 	    pid = fork();
 	    if (pid == 0) { 
-	        execl(temp[0], temp[1], (char *)NULL);
+	        execvp(temp[0], &temp[0]);
 	        printf("If you see this statement then execl failed ;-(\n");
 		exit(-1);
 	    } else if (pid > 0) { 
