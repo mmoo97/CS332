@@ -13,25 +13,50 @@
 #include <pthread.h>
 #include <unistd.h>
 
+typedef struct 
+{
+  double a, sum;
+  int N,size;
+  long tid;
+}thread_data;
+
+thread_data *createThreadData(double a, double sum, int N, int size, long tid) {
+  thread_data *p = malloc(sizeof(thread_data));
+
+  p->a = a;
+
+  p->sum = sum;
+
+  p->N = N;
+
+  p->size = size;
+
+  p->tid = tid;
+
+  return p;
+
+}
+
 pthread_mutex_t mutex=PTHREAD_MUTEX_INITIALIZER;
 
-double *a=NULL, sum=0.0;
-int    N, size;
+double sum=0.0;
 
 void *compute(void *arg) {
+
     int myStart, myEnd, myN, i;
-    long tid = (long)arg;
+    long tid = (long)arg->tid;
+    int size = arg->size;
 
     // determine start and end of computation for the current thread
-    myN = N/size;
+    myN = arg->N/size;
     myStart = tid*myN;
     myEnd = myStart + myN;
-    if (tid == (size-1)) myEnd = N;
+    if (tid == (size-1)) myEnd = arg->N;
 
     // compute partial sum
-    double mysum = 0.0;
+    double mysum = arg->sum;
     for (i=myStart; i<myEnd; i++)
-      mysum += a[i];
+      mysum += arg->a[i];
 
     // grab the lock, update global sum, and release lock
     pthread_mutex_lock(&mutex);
@@ -44,6 +69,10 @@ void *compute(void *arg) {
 int main(int argc, char **argv) {
     long i;
     pthread_t *tid;
+    thread_data * item;
+
+    int    N, size;
+    double * a = NULL;
 
     if (argc != 3) {
        printf("Usage: %s <# of elements> <# of threads>\n",argv[0]);
@@ -56,12 +85,14 @@ int main(int argc, char **argv) {
     // allocate vector and initialize
     tid = (pthread_t *)malloc(sizeof(pthread_t)*size);
     a = (double *)malloc(sizeof(double)*N); 
+
     for (i=0; i<N; i++)
       a[i] = (double)(i + 1);
 
     // create threads
     for ( i = 0; i < size; i++)
-      pthread_create(&tid[i], NULL, compute, (void *)i);
+      item = createThreadData(a[i], 0, N, size, i);
+      pthread_create(&tid[i], NULL, compute, (void *)item);
     
     // wait for them to complete
     for ( i = 0; i < size; i++)
