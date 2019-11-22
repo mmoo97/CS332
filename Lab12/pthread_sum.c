@@ -15,15 +15,17 @@
 
 typedef struct 
 {
-  double a, sum;
+  double sum;
   int N,size;
   long tid;
+  double a[];
+
 }thread_data;
 
-thread_data *createThreadData(double a, double sum, int N, int size, long tid) {
+thread_data *createThreadData(double * a, double sum, int N, int size, long tid) {
   thread_data *p = malloc(sizeof(thread_data));
 
-  p->a = a;
+  // p->a = a;
 
   p->sum = sum;
 
@@ -41,7 +43,11 @@ pthread_mutex_t mutex=PTHREAD_MUTEX_INITIALIZER;
 
 double sum=0.0;
 
-void *compute(void *arg) {
+void *compute(void *argu) {
+
+    thread_data * arg = (thread_data*)argu;
+
+    arg = (thread_data *)arg;
 
     int myStart, myEnd, myN, i;
     long tid = (long)arg->tid;
@@ -54,13 +60,14 @@ void *compute(void *arg) {
     if (tid == (size-1)) myEnd = arg->N;
 
     // compute partial sum
-    double mysum = arg->sum;
-    for (i=myStart; i<myEnd; i++)
-      mysum += arg->a[i];
+    for (i=myStart; i<myEnd; i++) 
+       arg->sum += arg->a[i];
+
+    //printf("a=, sum=%lf, N=%d, size=%d, tid=%ld\n", arg->sum, arg->N, arg->size, arg->tid);
 
     // grab the lock, update global sum, and release lock
     pthread_mutex_lock(&mutex);
-    sum += mysum;
+    sum += arg->sum;
     pthread_mutex_unlock(&mutex);
 
     return (NULL);
@@ -69,10 +76,9 @@ void *compute(void *arg) {
 int main(int argc, char **argv) {
     long i;
     pthread_t *tid;
-    thread_data * item;
 
     int    N, size;
-    double * a = NULL;
+    double *a = NULL;
 
     if (argc != 3) {
        printf("Usage: %s <# of elements> <# of threads>\n",argv[0]);
@@ -90,10 +96,10 @@ int main(int argc, char **argv) {
       a[i] = (double)(i + 1);
 
     // create threads
-    for ( i = 0; i < size; i++)
-      item = createThreadData(a[i], 0, N, size, i);
+    for ( i = 0; i < size; i++){
+      thread_data * item = createThreadData(a, 0, N, size, i);
       pthread_create(&tid[i], NULL, compute, (void *)item);
-    
+    }
     // wait for them to complete
     for ( i = 0; i < size; i++)
       pthread_join(tid[i], NULL);
