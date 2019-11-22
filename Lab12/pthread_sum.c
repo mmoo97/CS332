@@ -18,14 +18,14 @@ typedef struct
   double sum;
   int N,size;
   long tid;
-  double a[];
+  double * a;
 
 }thread_data;
 
 thread_data *createThreadData(double * a, double sum, int N, int size, long tid) {
   thread_data *p = malloc(sizeof(thread_data));
 
-  // p->a = a;
+  p->a = a;
 
   p->sum = sum;
 
@@ -49,6 +49,8 @@ void *compute(void *argu) {
 
     arg = (thread_data *)arg;
 
+    double *ret = NULL;
+
     int myStart, myEnd, myN, i;
     long tid = (long)arg->tid;
     int size = arg->size;
@@ -70,6 +72,10 @@ void *compute(void *argu) {
     sum += arg->sum;
     pthread_mutex_unlock(&mutex);
 
+    ret = &arg->sum;
+
+    pthread_exit(ret);
+
     return (NULL);
 }
 
@@ -79,6 +85,7 @@ int main(int argc, char **argv) {
 
     int    N, size;
     double *a = NULL;
+    void *ret;
 
     if (argc != 3) {
        printf("Usage: %s <# of elements> <# of threads>\n",argv[0]);
@@ -102,10 +109,10 @@ int main(int argc, char **argv) {
     }
     // wait for them to complete
     for ( i = 0; i < size; i++)
-      pthread_join(tid[i], NULL);
+      pthread_join(tid[i], &ret);
     
     printf("The total is %g, it should be equal to %g\n", 
-           sum, ((double)N*(N+1))/2);
+           ret, ((double)N*(N+1))/2);
     
     return 0;
 }
