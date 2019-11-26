@@ -9,7 +9,7 @@ Resources:
 /*
 Name: Mitchell Moore
 BlazerId:mmoo97
-Project: 2
+Project: Makeup Project (Project 2+3)
 */
 
 #include<stdio.h> 
@@ -20,6 +20,7 @@ Project: 2
 #include<sys/wait.h> 
 #include <dirent.h>
 #include <signal.h>
+#include <fcntl.h>
 
 #define BUFFSIZE 64 
 #define TOKEN_DELIM " \t\r\n\a" // delim args
@@ -177,16 +178,59 @@ static void sig_usr(int signo) {
 }
 
 int blazersh_launch(char **args, char * line) { // execute regular camand line progs with args in new process
-  int status;
+  int status, k = 0;
   char output[BUFSIZ];
+  int fdout, fdin;
 
   pid = fork(); 
   if (pid == 0) {
     // Child process
-    if (execvp(args[0], &args[0]) == -1) {
-      perror("blazersh");
+
+    int num_args =0;
+    while (args[num_args] != NULL) {
+      num_args++;
     }
+
+    int j=0, flag=0;
+    char *args_cp[100];
+    for(;j<num_args;j++){
+      if(strcmp(args[j], "<") == 0 || strcmp(args[j], "<\n")==0 || strcmp(args[j], ">") == 0 || strcmp(args[j], ">\n")==0){
+        flag = 1;
+        if(num_args>j+1){
+          if(strcmp(args[j], "<")==0){
+            if (((fdin = open(args[j+1], O_RDONLY, 0755)) == -1)) {
+              printf("Error opening file %s for output\n",args[j]);
+              exit(-1);
+            }
+            dup2(fdin, 0);
+          }else if(strcmp(args[j], ">")==0){
+            if (((fdout = open(args[j+1], O_CREAT | O_APPEND | O_WRONLY, 0755)) == -1)) {
+              printf("Error opening file %s for output\n",args[j]);
+              exit(-1);
+            }
+            dup2(fdout, 1);
+          }
+        }else{
+          printf("Filename not given\n");
+          return 1;
+        }
+      }else if(flag==0){
+       args_cp[k] = args[j];
+        k++;
+      }else if(flag==1){
+        flag = 0;
+      }
+    }
+    args_cp[k]= NULL;
+    execvp(args_cp[0], args_cp);
+    printf("Command not found!!!\nTry help command for more information.\n");
     exit(-1);
+
+
+  // if (execvp(args[0], &args[0]) == -1) {
+  //   perror("blazersh");
+  // }
+  // exit(-1);
   } else if (pid > 0){
     // Parent process
 
@@ -202,7 +246,7 @@ int blazersh_launch(char **args, char * line) { // execute regular camand line p
     } else if(WTERMSIG(status) == 2) {
         printf("Process with pid=%d has been INTERRUPTED...\n", pid);
     } else { /* child process did not terminate normally */
-        printf("Child process did not terminate normally!\n");
+        printf("Child process did not terminate normally! (Code = %d)\n", status);
         
         /* look at the man page for wait (man 2 wait) to determine
            how the child process was terminated */
