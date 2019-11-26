@@ -222,15 +222,11 @@ int blazersh_launch(char **args, char * line) { // execute regular camand line p
       }
     }
     args_cp[k]= NULL;
-    execvp(args_cp[0], args_cp);
-    printf("Command not found!!!\nTry help command for more information.\n");
+    if (execvp(args_cp[0], args_cp) == -1) {
+      perror("blazersh");
+    }
     exit(-1);
 
-
-  // if (execvp(args[0], &args[0]) == -1) {
-  //   perror("blazersh");
-  // }
-  // exit(-1);
   } else if (pid > 0){
     // Parent process
 
