@@ -1,4 +1,4 @@
-1. Project 2
+1. Makeup Project
 
 2. Extend BlazerShell Functionality
 
