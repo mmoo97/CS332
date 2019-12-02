@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <semaphore.h>
 
 typedef struct 
 {
@@ -39,7 +40,7 @@ thread_data *createThreadData(double * a, double sum, int N, int size, long tid)
 
 }
 
-pthread_mutex_t mutex=PTHREAD_MUTEX_INITIALIZER;
+sem_t mutex;
 
 double sum=0.0;
 
@@ -68,9 +69,9 @@ void *compute(void *argu) {
     //printf("a=, sum=%lf, N=%d, size=%d, tid=%ld\n", arg->sum, arg->N, arg->size, arg->tid);
 
     // grab the lock, update global sum, and release lock
-    pthread_mutex_lock(&mutex);
+    sem_wait(&mutex);
     sum += arg->sum;
-    pthread_mutex_unlock(&mutex);
+    sem_post(&mutex);
 
     ret = &arg->sum;
 
