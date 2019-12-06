@@ -32,6 +32,7 @@ Project: Makeup Project (Project 2+3)
 
 pid_t pid;
 int num_jobs = 0;
+int cores;
 
 struct Job_entry
 {
@@ -383,12 +384,31 @@ int quit(char **args) {
 }
 
 int submit(char **args) { // gives user usage info
+
+  //  FILE *fp1;
+  
+
+  // char output[BUFSIZ];
+
+  // if ((fp1 = popen(line, "w")) == NULL) {
+  // perror("popen");
+  // exit(EXIT_FAILURE);
+  //   }
+
+  //   while (fgets(output, BUFSIZ, fp1) !=NULL){
+  //     printf("%s", output);
+  //   }
+    
+
+  //   pclose(fp1);
+
+  printf("%d\n", cores);
   
   return 1;
 }
 
 int showjobs(char **args) { // gives user usage info
-  
+  printf("Show Jobs\n");
   return 1;
 }
 
@@ -444,7 +464,15 @@ void blazersh_loop(void) { // creates a command loop until user calls quit funct
 
 int main(int argc, char **argv) {
 
-	startupMessage(); 
+  if (argv[1] == NULL)
+   {
+     printf("./blazersh <number of cores>\n");
+     exit(-1);
+   }else {
+    cores = atoi(argv[1]);
+   } 
+   
+	startupMessage();
 	blazersh_loop(); 
 
 	return 0;
