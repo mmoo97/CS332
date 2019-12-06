@@ -21,6 +21,7 @@ Project: Makeup Project (Project 2+3)
 #include <dirent.h>
 #include <signal.h>
 #include <fcntl.h>
+#include "queue.h"
 
 #define BUFFSIZE 64 
 #define TOKEN_DELIM " \t\r\n\a" // delim args
@@ -47,6 +48,8 @@ int quit(char **args);
 int history(char **args);
 int jobs(char **args);
 int cont(char **args);
+int submit(char **args);
+int showjobs(char **args);
 
 char *builtin_str[] = {
   "list",
@@ -358,19 +361,21 @@ int cont(char ** args) {
   if (args[1] == NULL) { // if no lpid given throw expected format
     fprintf(stderr, "blazersh: expected argument to \"cont\"\n");
     // todo: could implement usage of home environment variable
-  } else if ((result = kill(lpid, SIGCONT)) != 0) { // continue process
+  } else {
+    if ((result = kill(lpid, SIGCONT)) != 0) { // continue process
       perror("blazersh"); // throw error if dir doesn't exist
-  }
-    if (result == 0)
+    }else {
       for (i = 0; i < num_jobs; i++) {
         if (entries[i]->l_pid == lpid) {
           free(entries[i]);
           num_jobs--;
         }
-      }
-      printf("Process %s started.\n", args[1]);
-    return 1;
+    }
   }
+}
+    printf("Process %s started.\n", args[1]);
+    return 1;
+}
 
 int quit(char **args) {
   clear(); // resets the prompt screen
