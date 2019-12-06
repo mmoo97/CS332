@@ -55,8 +55,9 @@ char *builtin_str[] = {
   "history",
   "quit",
   "jobs",
-  "cont"
-  "submit"
+  "cont",
+  "submit",
+  "showjobs"
 };
 
 int (*builtin_func[]) (char **) = {
@@ -67,7 +68,8 @@ int (*builtin_func[]) (char **) = {
   &quit,
   &jobs,
   &cont,
-  &submit
+  &submit,
+  &showjobs
 };
 
 struct Job_entry *createJobEntry(char *p_name, int l_pid) {
@@ -376,6 +378,11 @@ int quit(char **args) {
 }
 
 int submit(char **args) { // gives user usage info
+  
+  return 1;
+}
+
+int showjobs(char **args) { // gives user usage info
   
   return 1;
 }
