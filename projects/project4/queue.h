@@ -10,10 +10,10 @@ typedef struct _queue {
 	int count;   /* no. of elements in the queue */
 } queue;
 
-queue *queue_init(int n);
-int queue_insert(queue *q, int item);
-int queue_delete(queue *q);
-void queue_display(queue *q);
-void queue_destroy(queue *q);
+extern queue *queue_init(int n);
+extern int queue_insert(queue *q, int item);
+extern int queue_delete(queue *q);
+extern void queue_display(queue *q);
+extern void queue_destroy(queue *q);
 
 #endif

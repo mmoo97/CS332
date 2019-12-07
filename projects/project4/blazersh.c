@@ -32,7 +32,11 @@ Project: Makeup Project (Project 2+3)
 
 pid_t pid;
 int num_jobs = 0;
+
+// queue related
+queue *q;
 int cores;
+int job_id = 1;
 
 struct Job_entry
 {
@@ -51,6 +55,12 @@ int jobs(char **args);
 int cont(char **args);
 int submit(char **args);
 int showjobs(char **args);
+
+queue *queue_init(int n);
+int queue_insert(queue *q, int item);
+int queue_delete(queue *q);
+void queue_display(queue *q);
+void queue_destroy(queue *q);
 
 char *builtin_str[] = {
   "list",
@@ -385,6 +395,16 @@ int quit(char **args) {
 
 int submit(char **args) { // gives user usage info
 
+  int i = 1;
+
+  char line[BUFSIZ];
+
+  while (args[i] != NULL) {
+    strcat(line, args[i]);
+    strcat(line, " ");
+    i++;
+  }
+  queue_insert(q, 5);
   //  FILE *fp1;
   
 
@@ -402,13 +422,23 @@ int submit(char **args) { // gives user usage info
 
   //   pclose(fp1);
 
-  printf("%d\n", cores);
+  // printf("%d\n", cores);
+
+  // printf("%s\n", line);
+  if (job_id%3 == 0)
+  {
+    queue_delete(q);
+  }
+
+  printf("job %d added to the queue\n", job_id);
+  job_id++;
   
   return 1;
 }
 
 int showjobs(char **args) { // gives user usage info
-  printf("Show Jobs\n");
+  queue_display(q);
+  //printf("Show Jobs\n");
   return 1;
 }
 
@@ -471,7 +501,7 @@ int main(int argc, char **argv) {
    }else {
     cores = atoi(argv[1]);
    } 
-   
+  q = queue_init(10);
 	startupMessage();
 	blazersh_loop(); 
 
