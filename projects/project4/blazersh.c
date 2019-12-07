@@ -108,7 +108,6 @@ void startupMessage() { //welcome message when entering shell
     printf("| |_) | | (_| |/ /  __/ |   ___) | | | |  __/ | |\n");
     printf("|____/|_|\\__,_/___\\___|_|  |____/|_| |_|\\___|_|_|\n");
     char* username = getenv("USER"); 
-    char* pwd = getenv("PWD");
     printf("\n\nUser:\t%s\n\n\n", username); 
 
     sleep(1); 
@@ -197,7 +196,6 @@ static void sig_usr(int signo) {
 
 int blazersh_launch(char **args, char * line) { // execute regular camand line progs with args in new process
   int status, k = 0;
-  char output[BUFSIZ];
   int fdout, fdin;
 
   pid = fork(); 
@@ -404,31 +402,34 @@ int submit(char **args) { // gives user usage info
     strcat(line, " ");
     i++;
   }
+  char *str = malloc(1024 * sizeof(char*));
+  sprintf(str, "%d", job_id);
+
+  strcat(line, " > output/");
+  strcat(line, str);
+  strcat(line, ".out 2> errors/");
+  strcat(line, str);
+  strcat(line, ".err ");
+
+
   queue_insert(q, 5);
-  //  FILE *fp1;
   
+  FILE *fp1;
 
-  // char output[BUFSIZ];
+  if ((fp1 = popen(line, "w")) == NULL) {
+  perror("popen");
+  exit(EXIT_FAILURE);
+    }
 
-  // if ((fp1 = popen(line, "w")) == NULL) {
-  // perror("popen");
-  // exit(EXIT_FAILURE);
-  //   }
-
-  //   while (fgets(output, BUFSIZ, fp1) !=NULL){
-  //     printf("%s", output);
-  //   }
-    
-
-  //   pclose(fp1);
+    pclose(fp1);
 
   // printf("%d\n", cores);
 
   // printf("%s\n", line);
-  if (job_id%3 == 0)
-  {
-    queue_delete(q);
-  }
+
+  free(str);
+  fflush(stdout);
+
 
   printf("job %d added to the queue\n", job_id);
   job_id++;
@@ -501,7 +502,7 @@ int main(int argc, char **argv) {
    }else {
     cores = atoi(argv[1]);
    } 
-  q = queue_init(10);
+  q = queue_init(20);
 	startupMessage();
 	blazersh_loop(); 
 

@@ -45,8 +45,9 @@ int queue_delete(queue *q) {
 void queue_display(queue *q) {
 	int i;
 	if (q != NULL && q->count != 0) {
-		printf("queue has %d elements, start = %d, end = %d\n", 
+		printf("\nqueue has %d elements, start = %d, end = %d\n\n", 
 			q->count, q->start, q->end);
+		printf("Jobs\tCommand\t\t\t\tStatus\n");
 		printf("queue contents: ");
 		for (i = 0; i < q->count; i++)
 	    		printf("%d ", q->buffer[(q->start + i) % q->size]);
